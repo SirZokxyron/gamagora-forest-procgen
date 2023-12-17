@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4b80b3d030c89245ab50336c5fc6bf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depth: 3
+  depth: 2
   deltaRoll: 60
   deltaPitch: 60
   deltaYaw: 20

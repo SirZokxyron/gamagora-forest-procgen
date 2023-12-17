@@ -65,7 +65,7 @@ public class PoissonDiskSampler
         return Random.Range(0, max);
     }
 
-    public List<Vector2> GeneratePoisson()
+    public IEnumerator GeneratePoisson()
     {
         float currentMinDist = minDist;
 
@@ -85,7 +85,6 @@ public class PoissonDiskSampler
 
         RandomQueue processList = new RandomQueue();
         List<Vector2> samplePoints = new List<Vector2>();
-
         Vector2 firstPoint = new Vector2(Rand(width), Rand(height));
 
         processList.push(firstPoint);
@@ -107,9 +106,11 @@ public class PoissonDiskSampler
                     grid[ImageToGrid(newPoint, cellSize)] = newPoint;
                 }
             }
+            yield return samplePoints;
+            samplePoints = new List<Vector2>();
         }
 
-        return samplePoints;
+        yield return "success";
     }
 
 

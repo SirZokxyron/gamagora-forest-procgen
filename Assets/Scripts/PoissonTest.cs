@@ -205,23 +205,23 @@ public class PoissonTest : MonoBehaviour
         //    (int)myRect.rect.width, 
         //    (int)myRect.rect.height, _minDist, newPoints);
 
-        List<Vector2> myPts = new PoissonDiskSampler(
-            (int)myRect.rect.width, 
-            (int)myRect.rect.height, 
-            seed, _minDist, newPoints, perlinScale, minNoise, maxNoise
-            ).GeneratePoisson();
+        //List<Vector2> myPts = new PoissonDiskSampler(
+        //    (int)myRect.rect.width, 
+        //    (int)myRect.rect.height, 
+        //    seed, _minDist, newPoints, perlinScale, minNoise, maxNoise
+        //    ).GeneratePoisson();
         
-        var colorData = tex.GetPixels32();
-        for (int i = 0; i < colorData.Length; i++)
-        {
-            colorData[i] = new Color(0, 0, 0, 0);
-        }
-        tex.SetPixels32(colorData);
+        //var colorData = tex.GetPixels32();
+        //for (int i = 0; i < colorData.Length; i++)
+        //{
+        //    colorData[i] = new Color(0, 0, 0, 0);
+        //}
+        //tex.SetPixels32(colorData);
 
-        foreach (Vector2 pt in myPts)
-        {
-            DrawCircle(tex, Color.red, (int)pt.x, (int)pt.y, 4);
-        }
+        //foreach (Vector2 pt in myPts)
+        //{
+        //    DrawCircle(tex, Color.red, (int)pt.x, (int)pt.y, 4);
+        //}
 
         //float cellSize = _minDist / Mathf.Sqrt(2);
         //float width = myRect.rect.width;

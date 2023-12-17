@@ -26,7 +26,21 @@ public class BezierSurface : MonoBehaviour
     [SerializeField] Func<float, float>[] BernsteinPoly = new Func<float, float>[4];
     [SerializeField] float[] time;
     [SerializeField] Vector3[,] bezierNodes;
+    public void SetSeed(int seed)
+    {
+        this.seed = seed;
 
+        sideCount = 4 + subdivisionDepth * 3;
+        rawNodes = new Vector3[sideCount, sideCount];
+        C2Nodes = new Vector3[sideCount, sideCount];
+
+        GeneratePerlinSurface();
+
+        C2PreProcessing();
+
+        for (int i = 0; i < 4; ++i)
+            BernsteinPoly[i] = Bernstein(3, i);
+    }
     void Start() {
         sideCount = 4 + subdivisionDepth * 3;
         rawNodes = new Vector3[sideCount, sideCount];
@@ -42,45 +56,45 @@ public class BezierSurface : MonoBehaviour
 
     // For debug purposes
     void OnDrawGizmos() {
-        // sideCount = 4 + subdivisionDepth * 3;
-        // rawNodes = new Vector3[sideCount, sideCount];
-        // C2Nodes = new Vector3[sideCount, sideCount];
+        sideCount = 4 + subdivisionDepth * 3;
+        rawNodes = new Vector3[sideCount, sideCount];
+        C2Nodes = new Vector3[sideCount, sideCount];
 
-        // GeneratePerlinSurface();
+        GeneratePerlinSurface();
 
-        // Gizmos.color = Color.white;
-        // for (int xi = 0; xi < sideCount-1; ++xi) 
-        // for (int zi = 0; zi < sideCount-1; ++zi) {
-        //     Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi+1, zi]);
-        //     Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi+1]);
-        // }
-        
-        // for (int i = 0; i < sideCount-1; ++i) {
-        //     Gizmos.DrawLine(rawNodes[i, sideCount-1], rawNodes[i+1, sideCount-1]);
-        //     Gizmos.DrawLine(rawNodes[sideCount-1, i], rawNodes[sideCount-1, i+1]);
-        // }
+        Gizmos.color = Color.white;
+        for (int xi = 0; xi < sideCount - 1; ++xi)
+            for (int zi = 0; zi < sideCount - 1; ++zi)
+            {
+                Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi + 1, zi]);
+                Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi + 1]);
+            }
 
-        // C2PreProcessing();
-        // GenerateBezierSurface();
+        for (int i = 0; i < sideCount - 1; ++i)
+        {
+            Gizmos.DrawLine(rawNodes[i, sideCount - 1], rawNodes[i + 1, sideCount - 1]);
+            Gizmos.DrawLine(rawNodes[sideCount - 1, i], rawNodes[sideCount - 1, i + 1]);
+        }
 
-        // int bezierSideCount = (subdivisionDepth + 1) * time.Length;
-        // Gizmos.color = Color.red;
-        // for (int xi = 0; xi < bezierSideCount-1; ++xi) 
-        // for (int zi = 0; zi < bezierSideCount-1; ++zi) {
-        //     Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi+1, zi]);
-        //     Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi+1]);
-        // }
-        
-        // for (int i = 0; i < bezierSideCount-1; ++i) {
-        //     Gizmos.DrawLine(bezierNodes[i, bezierSideCount-1], bezierNodes[i+1, bezierSideCount-1]);
-        //     Gizmos.DrawLine(bezierNodes[bezierSideCount-1, i], bezierNodes[bezierSideCount-1, i+1]);
-        // }
+        C2PreProcessing();
+        for (int i = 0; i < 4; ++i)
+            BernsteinPoly[i] = Bernstein(3, i);
+        GenerateBezierSurface();
 
-        // Gizmos.color = Color.blue;
-        // foreach (float xt in time)
-        // foreach (float zt in time) {
-        //     Gizmos.DrawSphere(GetBezierAt(xt, zt), 0.1f);
-        // }
+        int bezierSideCount = (subdivisionDepth + 1) * time.Length;
+        Gizmos.color = Color.red;
+        for (int xi = 0; xi < bezierSideCount - 1; ++xi)
+            for (int zi = 0; zi < bezierSideCount - 1; ++zi)
+            {
+                Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi + 1, zi]);
+                Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi + 1]);
+            }
+
+        for (int i = 0; i < bezierSideCount - 1; ++i)
+        {
+            Gizmos.DrawLine(bezierNodes[i, bezierSideCount - 1], bezierNodes[i + 1, bezierSideCount - 1]);
+            Gizmos.DrawLine(bezierNodes[bezierSideCount - 1, i], bezierNodes[bezierSideCount - 1, i + 1]);
+        }
     }
 
     // ======================= //
