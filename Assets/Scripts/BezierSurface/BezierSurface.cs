@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.VisualScripting;
@@ -38,43 +39,50 @@ public class BezierSurface : MonoBehaviour
 
         for (int i = 0; i < 4; ++i) 
             BernsteinPoly[i] = Bernstein(3, i);
+
+        GenerateBezierSurface();
+        CreateMeshSurface();
     }
 
     // For debug purposes
     void OnDrawGizmos() {
-        // sideCount = 4 + subdivisionDepth * 3;
-        // rawNodes = new Vector3[sideCount, sideCount];
-        // C2Nodes = new Vector3[sideCount, sideCount];
+        sideCount = 4 + subdivisionDepth * 3;
+        rawNodes = new Vector3[sideCount, sideCount];
+        C2Nodes = new Vector3[sideCount, sideCount];
 
-        // GeneratePerlinSurface();
+        GeneratePerlinSurface();
 
-        // Gizmos.color = Color.white;
-        // for (int xi = 0; xi < sideCount-1; ++xi) 
-        // for (int zi = 0; zi < sideCount-1; ++zi) {
-        //     Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi+1, zi]);
-        //     Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi+1]);
-        // }
+        Gizmos.color = Color.white;
+        for (int xi = 0; xi < sideCount-1; ++xi) 
+        for (int zi = 0; zi < sideCount-1; ++zi) {
+            Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi+1, zi]);
+            Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi+1]);
+        }
         
-        // for (int i = 0; i < sideCount-1; ++i) {
-        //     Gizmos.DrawLine(rawNodes[i, sideCount-1], rawNodes[i+1, sideCount-1]);
-        //     Gizmos.DrawLine(rawNodes[sideCount-1, i], rawNodes[sideCount-1, i+1]);
-        // }
+        for (int i = 0; i < sideCount-1; ++i) {
+            Gizmos.DrawLine(rawNodes[i, sideCount-1], rawNodes[i+1, sideCount-1]);
+            Gizmos.DrawLine(rawNodes[sideCount-1, i], rawNodes[sideCount-1, i+1]);
+        }
 
-        // C2PreProcessing();
-        // GenerateBezierSurface();
+        C2PreProcessing();
 
-        // int bezierSideCount = (subdivisionDepth + 1) * time.Length;
-        // Gizmos.color = Color.red;
-        // for (int xi = 0; xi < bezierSideCount-1; ++xi) 
-        // for (int zi = 0; zi < bezierSideCount-1; ++zi) {
-        //     Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi+1, zi]);
-        //     Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi+1]);
-        // }
+        for (int i = 0; i < 4; ++i) 
+            BernsteinPoly[i] = Bernstein(3, i);
+
+        GenerateBezierSurface();
+
+        int bezierSideCount = (subdivisionDepth + 1) * time.Length;
+        Gizmos.color = Color.red;
+        for (int xi = 0; xi < bezierSideCount-1; ++xi) 
+        for (int zi = 0; zi < bezierSideCount-1; ++zi) {
+            Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi+1, zi]);
+            Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi+1]);
+        }
         
-        // for (int i = 0; i < bezierSideCount-1; ++i) {
-        //     Gizmos.DrawLine(bezierNodes[i, bezierSideCount-1], bezierNodes[i+1, bezierSideCount-1]);
-        //     Gizmos.DrawLine(bezierNodes[bezierSideCount-1, i], bezierNodes[bezierSideCount-1, i+1]);
-        // }
+        for (int i = 0; i < bezierSideCount-1; ++i) {
+            Gizmos.DrawLine(bezierNodes[i, bezierSideCount-1], bezierNodes[i+1, bezierSideCount-1]);
+            Gizmos.DrawLine(bezierNodes[bezierSideCount-1, i], bezierNodes[bezierSideCount-1, i+1]);
+        }
 
         // Gizmos.color = Color.blue;
         // foreach (float xt in time)
@@ -217,6 +225,50 @@ public class BezierSurface : MonoBehaviour
                 bezierNodes[xi * time.Length + ui, zi * time.Length + vi] = P(time[ui], time[vi]); 
             }
         }
+    }
+
+    // ============ //
+    // === Mesh === //
+    // ============ //
+
+    void CreateMeshSurface() {
+        gameObject.AddComponent<MeshFilter>();
+        gameObject.AddComponent<MeshRenderer>();
+
+        int side = (subdivisionDepth + 1) * time.Length;
+        int verticesN = side * side;
+
+        Vector3[] vertices = new Vector3[verticesN];
+        List<int> triangles = new List<int>();
+
+        int id = 0;
+        for (int xi = 0; xi < (subdivisionDepth + 1) * time.Length; ++xi)
+        for (int zi = 0; zi < (subdivisionDepth + 1) * time.Length; ++zi) {
+            vertices[id] = bezierNodes[xi, zi];
+            id += 1;
+        }
+
+        Debug.Log($"id:{id}");
+        Debug.Log($"side:{side}, verticesN:{verticesN}");
+
+        for (int i = 0; i < verticesN-side-2; ++i) {
+            if (i % (side+1) == side) continue;
+            // First half
+            triangles.Add(i);
+            triangles.Add(i + 1);
+            triangles.Add(i + side + 1);
+
+            // Second half
+            triangles.Add(i + side + 1);
+            triangles.Add(i + 1);
+            triangles.Add(i + side + 2);
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        gameObject.GetComponent<MeshFilter>().mesh = mesh;
     }
 
     // ================= //
