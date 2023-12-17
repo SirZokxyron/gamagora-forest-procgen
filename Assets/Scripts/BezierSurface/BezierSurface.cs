@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.VisualScripting;
@@ -52,6 +53,9 @@ public class BezierSurface : MonoBehaviour
 
         for (int i = 0; i < 4; ++i) 
             BernsteinPoly[i] = Bernstein(3, i);
+
+        GenerateBezierSurface();
+        CreateMeshSurface();
     }
 
     // For debug purposes
@@ -231,6 +235,50 @@ public class BezierSurface : MonoBehaviour
                 bezierNodes[xi * time.Length + ui, zi * time.Length + vi] = P(time[ui], time[vi]); 
             }
         }
+    }
+
+    // ============ //
+    // === Mesh === //
+    // ============ //
+
+    void CreateMeshSurface() {
+        gameObject.AddComponent<MeshFilter>();
+        gameObject.AddComponent<MeshRenderer>();
+
+        int side = (subdivisionDepth + 1) * time.Length;
+        int verticesN = side * side;
+
+        Vector3[] vertices = new Vector3[verticesN];
+        List<int> triangles = new List<int>();
+
+        int id = 0;
+        for (int xi = 0; xi < (subdivisionDepth + 1) * time.Length; ++xi)
+        for (int zi = 0; zi < (subdivisionDepth + 1) * time.Length; ++zi) {
+            vertices[id] = bezierNodes[xi, zi];
+            id += 1;
+        }
+
+        Debug.Log($"id:{id}");
+        Debug.Log($"side:{side}, verticesN:{verticesN}");
+
+        for (int i = 0; i < verticesN-side-2; ++i) {
+            if (i % (side+1) == side) continue;
+            // First half
+            triangles.Add(i);
+            triangles.Add(i + 1);
+            triangles.Add(i + side + 1);
+
+            // Second half
+            triangles.Add(i + side + 1);
+            triangles.Add(i + 1);
+            triangles.Add(i + side + 2);
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        gameObject.GetComponent<MeshFilter>().mesh = mesh;
     }
 
     // ================= //
