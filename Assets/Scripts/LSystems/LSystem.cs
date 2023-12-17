@@ -142,7 +142,8 @@ public class LSystem : MonoBehaviour
         GameObject log = Instantiate(
             prefabLog,
             position,
-            Quaternion.LookRotation(direction)
+            Quaternion.LookRotation(direction),
+            transform
         );
         Vector3 oldScale = log.transform.localScale;
         log.transform.localScale = new Vector3(oldScale.x, oldScale.y, length);
@@ -151,8 +152,8 @@ public class LSystem : MonoBehaviour
 
     // TODO random? offset?
     void DrawLeaf() {
-        float size = Random.Range(1.5f, 2.5f);
-        GameObject leaf = Instantiate(prefabLeaf, position, Quaternion.identity);
+        float size = Random.Range(0.5f, 1.5f);
+        GameObject leaf = Instantiate(prefabLeaf, position, Quaternion.identity, transform);
         leaf.transform.localScale = Vector3.one * size;
     }
 }
