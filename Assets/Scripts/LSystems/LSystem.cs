@@ -26,6 +26,11 @@ public class LSystem : MonoBehaviour
     [SerializeField] GameObject prefabLeaf;
     [SerializeField] GameObject prefabLog;
 
+    public void SetDepth(int depth)
+    {
+        this.depth = depth;
+    }
+
     void Start() {
         positionStack = new Stack<Vector3>();
         directionStack = new Stack<Vector3>();

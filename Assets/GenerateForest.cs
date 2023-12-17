@@ -20,6 +20,7 @@ public class GenerateForest : MonoBehaviour
     [SerializeField] private BezierSurface bezierSurface;
 
     [Header("L System")]
+    [SerializeField, Range(1, 7)] private int treeDepth;
     [SerializeField] private GameObject lTree;
 
     PoissonDiskSampler diskSampler;
@@ -29,7 +30,7 @@ public class GenerateForest : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        bezierSurface.SetSeed(seed);
+        bezierSurface.SetSeed(seed, Mathf.Max(width, height));
         diskSampler = new PoissonDiskSampler(
             width, height, 
             seed, defaultDistance, 
@@ -50,7 +51,8 @@ public class GenerateForest : MonoBehaviour
                 Vector3 pos = bezierSurface.GetBezierAt(pt.x / width, pt.y / height);
                 pos.x = pt.x;
                 pos.z = pt.y;
-                Instantiate(lTree, pos, Quaternion.identity);
+                LSystem lsys = Instantiate(lTree, pos, Quaternion.identity).GetComponent<LSystem>();
+                lsys.SetDepth(treeDepth);
             }
         } else if ((treePlacementCoroutine.result is string s) && s == "success")
         {

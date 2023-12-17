@@ -12,10 +12,11 @@ public class BezierSurface : MonoBehaviour
 {
     [Header("Surface Param")]
     [SerializeField, Range(0, 1000000)] int seed = 0;
-    [SerializeField, Range(1, 20)] float planeSize = 5f;
+    [SerializeField, Range(1, 200)] float planeSize = 5f;
     [SerializeField, Range(1, 20)] float zoomPerlinArea = 5f;
     [SerializeField, Range(0, 10)] int subdivisionDepth = 0;
     [SerializeField, Range(0f, 10f)] float noiseAmp = 1f;
+    [SerializeField] private Material groundMaterial;
 
     [Header("Surface Debug")]
     [SerializeField] int sideCount;
@@ -27,9 +28,11 @@ public class BezierSurface : MonoBehaviour
     [SerializeField] Func<float, float>[] BernsteinPoly = new Func<float, float>[4];
     [SerializeField] float[] time;
     [SerializeField] Vector3[,] bezierNodes;
-    public void SetSeed(int seed)
+
+    public void SetSeed(int seed, float planeSize)
     {
         this.seed = seed;
+        this.planeSize = planeSize;
 
         sideCount = 4 + subdivisionDepth * 3;
         rawNodes = new Vector3[sideCount, sideCount];
@@ -41,7 +44,11 @@ public class BezierSurface : MonoBehaviour
 
         for (int i = 0; i < 4; ++i)
             BernsteinPoly[i] = Bernstein(3, i);
+
+        GenerateBezierSurface();
+        CreateMeshSurface();
     }
+
     void Start() {
         sideCount = 4 + subdivisionDepth * 3;
         rawNodes = new Vector3[sideCount, sideCount];
@@ -279,6 +286,7 @@ public class BezierSurface : MonoBehaviour
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
         gameObject.GetComponent<MeshFilter>().mesh = mesh;
+        gameObject.GetComponent<MeshRenderer>().material = groundMaterial;
     }
 
     // ================= //
