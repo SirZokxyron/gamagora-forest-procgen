@@ -259,26 +259,23 @@ public class BezierSurface : MonoBehaviour
         List<int> triangles = new List<int>();
 
         int id = 0;
-        for (int xi = 0; xi < (subdivisionDepth + 1) * time.Length; ++xi)
-        for (int zi = 0; zi < (subdivisionDepth + 1) * time.Length; ++zi) {
+        for (int zi = 0; zi < (subdivisionDepth + 1) * time.Length; ++zi)
+        for (int xi = 0; xi < (subdivisionDepth + 1) * time.Length; ++xi) {
             vertices[id] = bezierNodes[xi, zi];
             id += 1;
         }
 
-        Debug.Log($"id:{id}");
-        Debug.Log($"side:{side}, verticesN:{verticesN}");
-
-        for (int i = 0; i < verticesN-side-2; ++i) {
-            if (i % (side+1) == side) continue;
+        for (int i = 0; i < verticesN-side-1; ++i) {
+            if ((i+1) % side == 0) continue;
             // First half
             triangles.Add(i);
-            triangles.Add(i + 1);
             triangles.Add(i + side + 1);
+            triangles.Add(i + 1);
 
             // Second half
+            triangles.Add(i);
+            triangles.Add(i + side);
             triangles.Add(i + side + 1);
-            triangles.Add(i + 1);
-            triangles.Add(i + side + 2);
         }
 
         Mesh mesh = new Mesh();
