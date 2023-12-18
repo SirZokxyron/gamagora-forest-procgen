@@ -69,11 +69,14 @@ public class BezierSurface : MonoBehaviour
 
     // For debug purposes
     void OnDrawGizmos() {
-        sideCount = 4 + subdivisionDepth * 3;
-        rawNodes = new Vector3[sideCount, sideCount];
-        C2Nodes = new Vector3[sideCount, sideCount];
+        if(defaultCurve || smoothCurve)
+        {
+            sideCount = 4 + subdivisionDepth * 3;
+            rawNodes = new Vector3[sideCount, sideCount];
+            C2Nodes = new Vector3[sideCount, sideCount];
 
-        GeneratePerlinSurface();
+            GeneratePerlinSurface();
+        }
 
         if(defaultCurve)
         {

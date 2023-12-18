@@ -248,12 +248,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 373832
-  planeSize: 50
-  zoomPerlinArea: 15.47
-  subdivisionDepth: 5
-  noiseAmp: 10
+  planeSize: 94.6
+  zoomPerlinArea: 18.18
+  subdivisionDepth: 6
+  noiseAmp: 9.24
   groundMaterial: {fileID: 2100000, guid: 53c4071a85d50ac488ad67235c5e5aa9, type: 2}
-  sideCount: 19
+  sideCount: 22
   bezierLinspace: 13
   time:
   - 0
@@ -269,8 +269,8 @@ MonoBehaviour:
   - 0.8333334
   - 0.9166667
   - 1
-  defaultCurve: 1
-  smoothCurve: 1
+  defaultCurve: 0
+  smoothCurve: 0
 --- !u!114 &781696861
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,16 +283,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7917534297e72b94496d7726b2ae95c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 50
-  height: 50
-  seed: 1449
-  defaultDistance: 2
-  minNoiseCoefficient: 0.5
-  maxNoiseCoefficient: 2
+  width: 100
+  height: 100
+  seed: 2430280
+  defaultDistance: 3
+  minNoiseCoefficient: 1
+  maxNoiseCoefficient: 2.5
   newPoints: 20
   perlinScale: 5
   bezierSurface: {fileID: 781696860}
-  treeDepth: 1
+  treeDepth: 2
   lTree: {fileID: 332752566429497080, guid: 6af285ae293f4be49b765c63e3d8e534, type: 3}
 --- !u!4 &781696862
 Transform:
