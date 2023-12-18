@@ -28,6 +28,8 @@ public class BezierSurface : MonoBehaviour
     [SerializeField] Func<float, float>[] BernsteinPoly = new Func<float, float>[4];
     [SerializeField] float[] time;
     [SerializeField] Vector3[,] bezierNodes;
+    [SerializeField] bool defaultCurve = true;
+    [SerializeField] bool smoothCurve = true;
 
     public void SetSeed(int seed, float planeSize)
     {
@@ -73,38 +75,48 @@ public class BezierSurface : MonoBehaviour
 
         GeneratePerlinSurface();
 
-        Gizmos.color = Color.white;
-        for (int xi = 0; xi < sideCount - 1; ++xi)
-            for (int zi = 0; zi < sideCount - 1; ++zi)
-            {
-                Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi + 1, zi]);
-                Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi + 1]);
-            }
-
-        for (int i = 0; i < sideCount - 1; ++i)
+        if(defaultCurve)
         {
-            Gizmos.DrawLine(rawNodes[i, sideCount - 1], rawNodes[i + 1, sideCount - 1]);
-            Gizmos.DrawLine(rawNodes[sideCount - 1, i], rawNodes[sideCount - 1, i + 1]);
+            Gizmos.color = Color.white;
+            for (int xi = 0; xi < sideCount - 1; ++xi)
+                for (int zi = 0; zi < sideCount - 1; ++zi)
+                {
+                    Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi + 1, zi]);
+                    Gizmos.DrawLine(rawNodes[xi, zi], rawNodes[xi, zi + 1]);
+                }
+
+            for (int i = 0; i < sideCount - 1; ++i)
+            {
+                Gizmos.DrawLine(rawNodes[i, sideCount - 1], rawNodes[i + 1, sideCount - 1]);
+                Gizmos.DrawLine(rawNodes[sideCount - 1, i], rawNodes[sideCount - 1, i + 1]);
+            }
         }
+        
 
-        C2PreProcessing();
-        for (int i = 0; i < 4; ++i)
-            BernsteinPoly[i] = Bernstein(3, i);
-        GenerateBezierSurface();
 
-        int bezierSideCount = (subdivisionDepth + 1) * time.Length;
-        Gizmos.color = Color.red;
-        for (int xi = 0; xi < bezierSideCount - 1; ++xi)
-            for (int zi = 0; zi < bezierSideCount - 1; ++zi)
+        if(smoothCurve)
+        {
+            C2PreProcessing();
+            for (int i = 0; i < 4; ++i)
+                BernsteinPoly[i] = Bernstein(3, i);
+            GenerateBezierSurface();
+
+            int bezierSideCount = (subdivisionDepth + 1) * time.Length;
+
+            Gizmos.color = Color.red;
+            for (int xi = 0; xi < bezierSideCount - 1; ++xi)
+                for (int zi = 0; zi < bezierSideCount - 1; ++zi)
+                {
+                    Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi + 1, zi]);
+                    Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi + 1]);
+                }
+
+            for (int i = 0; i < bezierSideCount - 1; ++i)
             {
-                Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi + 1, zi]);
-                Gizmos.DrawLine(bezierNodes[xi, zi], bezierNodes[xi, zi + 1]);
+                Gizmos.DrawLine(bezierNodes[i, bezierSideCount - 1], bezierNodes[i + 1, bezierSideCount - 1]);
+                Gizmos.DrawLine(bezierNodes[bezierSideCount - 1, i], bezierNodes[bezierSideCount - 1, i + 1]);
             }
 
-        for (int i = 0; i < bezierSideCount - 1; ++i)
-        {
-            Gizmos.DrawLine(bezierNodes[i, bezierSideCount - 1], bezierNodes[i + 1, bezierSideCount - 1]);
-            Gizmos.DrawLine(bezierNodes[bezierSideCount - 1, i], bezierNodes[bezierSideCount - 1, i + 1]);
         }
     }
 
@@ -257,6 +269,7 @@ public class BezierSurface : MonoBehaviour
 
         Vector3[] vertices = new Vector3[verticesN];
         List<int> triangles = new List<int>();
+        Vector2[] uv = new Vector2[vertices.Length];
 
         int id = 0;
         for (int zi = 0; zi < (subdivisionDepth + 1) * time.Length; ++zi)
@@ -278,9 +291,16 @@ public class BezierSurface : MonoBehaviour
             triangles.Add(i + side + 1);
         }
 
+        var uvs = new Vector2[vertices.Length];
+
+        for (int u = 0; u < uvs.Length; u++)
+            uvs[u] = new Vector2(vertices[u].x * transform.localScale.x, vertices[u].y * transform.localScale.y);
+
+
         Mesh mesh = new Mesh();
         mesh.vertices = vertices;
         mesh.triangles = triangles.ToArray();
+        mesh.uv = uvs;
         mesh.RecalculateNormals();
         gameObject.GetComponent<MeshFilter>().mesh = mesh;
         gameObject.GetComponent<MeshRenderer>().material = groundMaterial;

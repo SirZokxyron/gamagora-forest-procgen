@@ -16,6 +16,17 @@ public class PoissonDiskSampler
     private readonly float minDist;
     private readonly int newPointsCount;
 
+    /// <summary>
+    /// Create a Poisson Disk Sampler with parameters.
+    /// </summary>
+    /// <param name="width">Width of ground</param>
+    /// <param name="height">Height of ground</param>
+    /// <param name="seed">Random seed</param>
+    /// <param name="minDist">Minimum distance between points</param>
+    /// <param name="newPointsCount">Points to test and create/remove from an other point</param>
+    /// <param name="perlinScale">Size of the noise</param>
+    /// <param name="minNoise">Minimum coefficient for the minimum distance from the noise</param>
+    /// <param name="maxNoise">Maximum coefficient for the maximum distance from the noise</param>
     public PoissonDiskSampler(int width, int height, 
         int seed = 771, float minDist = 10, int newPointsCount = 1, 
         float perlinScale = 1f, float minNoise = 1f, float maxNoise = 2f)
@@ -40,6 +51,12 @@ public class PoissonDiskSampler
         : this((int) width, (int) height, seed, minDist, newPointsCount, perlinScale, minNoise, maxNoise)
     {}
 
+    /// <summary>
+    /// Create a dictionnary of minimum distance calculated from a default minimum distance
+    /// </summary>
+    /// <param name="size">Size of the dictionnary</param>
+    /// <param name="minDist">Default minimum distance</param>
+    /// <returns>dictionnary of minimum distance by position</returns>
     Dictionary<Vector2Int, float> Grey(Vector2 size, float minDist)
     {
         Dictionary<Vector2Int, float> grey = new Dictionary<Vector2Int, float>();
@@ -60,11 +77,23 @@ public class PoissonDiskSampler
         return grey;
     }
 
+
+    /// <summary>
+    /// Random number from a maximum
+    /// </summary>
+    /// <param name="max">Maximum</param>
+    /// <returns>integer between 0 and maximum exclude</returns>
     int Rand(int max)
     {
         return Random.Range(0, max);
     }
 
+    /// <summary>
+    /// Coroutine to generate a sample from parameters.
+    /// </br>
+    /// The coroutine prevent unity from freezing and allow the generation to work gradually
+    /// </summary>
+    /// <returns>List of points</returns>
     public IEnumerator GeneratePoisson()
     {
         float currentMinDist = minDist;
@@ -114,11 +143,24 @@ public class PoissonDiskSampler
     }
 
 
+    /// <summary>
+    /// Check if a point is in our bounds
+    /// </summary>
+    /// <param name="point">Point to check</param>
+    /// <param name="width">Width of the ground</param>
+    /// <param name="height">Height (or depth) of the ground</param>
+    /// <returns>boolean</returns>
     private bool InRectangle(Vector2 point, int width, int height)
     {
         return point.x >= 0 && point.x < width && point.y >= 0 && point.y < height;
     }
 
+    /// <summary>
+    /// Return the point in the grid where the point parameter is
+    /// </summary>
+    /// <param name="point">Point in world position</param>
+    /// <param name="cellSize">Size of the cells in the grid</param>
+    /// <returns>Vector2Int representing a cell</returns>
     private Vector2Int ImageToGrid(Vector2 point, float cellSize)
     {
         int gridX = (int)(point.x / cellSize);
@@ -126,6 +168,15 @@ public class PoissonDiskSampler
         return new Vector2Int(gridX, gridY);
     }
 
+    /// <summary>
+    /// Generate a random point in a circle around the point parameter.
+    /// </br>
+    /// The point is in a ring around the point where the minimum distance is minDistance and
+    /// the maximum distance is 2*minDistance.
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="currentMinDist"></param>
+    /// <returns></returns>
     private Vector2 GenerateRandomPointAround(Vector2 point, float currentMinDist)
     {
         float r1 = Random.value;
@@ -139,6 +190,14 @@ public class PoissonDiskSampler
         return new Vector2(newX, newY);
     }
 
+    /// <summary>
+    /// Check if a point is near another. It checks all point in a distance of 5 grid cells.
+    /// </summary>
+    /// <param name="grid">Dictionnary representing sampled point, points are Vector2? because some cells can be empty</param>
+    /// <param name="point">Point to check</param>
+    /// <param name="currentMinDist">Minimum distance at point position</param>
+    /// <param name="cellSize">Size of the cell</param>
+    /// <returns>boolean</returns>
     private bool InNeighbourhood(Dictionary<Vector2Int, Vector2?> grid, Vector2 point, float currentMinDist, float cellSize)
     {
         Vector2 gridPoint = ImageToGrid(point, cellSize);
@@ -157,6 +216,13 @@ public class PoissonDiskSampler
         return false;
     }
 
+    /// <summary>
+    /// Returns all cells in a grid from a point
+    /// </summary>
+    /// <param name="grid">Dictionnary of point</param>
+    /// <param name="gridPoint">Point in the grid</param>
+    /// <param name="radius">Cells around the point to check</param>
+    /// <returns>List of all points that can be null around a point</returns>
     private List<Vector2?> SquareAroundPoint(Dictionary<Vector2Int, Vector2?> grid, Vector2 gridPoint, float radius)
     {
         List<Vector2?> pts = new List<Vector2?>();
